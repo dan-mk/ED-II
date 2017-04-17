@@ -20,18 +20,11 @@ TpArvore *inicializa(){//aloca memoria para inicializar a arvore
 	return arvore;
 }
 
-void avl_print ( TpArvore *tree, TpNodo *node, int level) 
-{    
-    int i;
-    
-    if ( tree == NULL || node == NULL ) return;
-    for ( i = 0; i < level; i++ )
-        printf ( "   " );
-
-    printf ( "> [" );
-    printf("%d\n",node->chave) ;  
-    avl_print ( tree, node->esq, level + 1 );
-    avl_print ( tree, node->dir, level + 1 );
+void imprime ( TpArvore *tree, TpNodo *node) {    
+    if ( tree == NULL || node == NULL ) return; 
+    imprime (tree, node->esq);
+    printf("Chave: %d Altura: %d AltEsq: %d AltDir: %d, ",node->chave,node->altura,node->altesquerda,node->altdireita) ;
+    imprime (tree, node->dir);
 }
 
 TpArvore *inserir(TpArvore * tree, int valor){
@@ -117,7 +110,7 @@ int main(){
 				arvore = inserir(arvore,valor);
 				break;
 			case 2:
-				avl_print(arvore,arvore->raiz,0);
+				imprime(arvore,arvore->raiz);
 				break;
 			case 0:
 				break;
