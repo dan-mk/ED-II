@@ -40,7 +40,7 @@ Node * crianodo(Key * keys, Node **filhos){
 	Node * nodo = (Node *) calloc(1,sizeof(Node));
 	nodo->keys = keys;
 	nodo->filhos = filhos;
-	nodo->quant = 0;
+	nodo->quant = t-1;
 	return nodo;
 }
 
@@ -52,7 +52,7 @@ void insere(int value, Tree *tree, Node *node){
 		key->ant = NULL;
 		key->prox = NULL;
 		nodo->keys = key;
-		nodo->quant++;
+		nodo->quant = 1;
 		nodo->pai = NULL;
 		tree->raiz = nodo;
 	}else{
