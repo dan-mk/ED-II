@@ -35,10 +35,10 @@ int main(){
 	insere(20,tree,tree->raiz);
 	insere(30,tree,tree->raiz);
 	insere(40,tree,tree->raiz);
-	printf("%d\n",tree->raiz->keys->chave);
-	Node * tes = tree->raiz->filhos[0];
-	printf("%p\n",tes->keys);
+
+	printf("%d\n",tree->raiz->filhos[0]->keys->chave);
 	printf("%d\n",tree->raiz->filhos[1]->keys->chave);
+
 
 	return 0;
 }
@@ -81,7 +81,7 @@ void insere(int value, Tree *tree, Node *node){
 				node->quant++;
 			}else{
 				split(tree,node);
-				insere(value,tree,tree->raiz);
+				//insere(value,tree,tree->raiz);
 			}
 		}
 	}
@@ -114,12 +114,13 @@ void split(Tree *tree, Node *node){
 
 	Node *esq = crianodo(chesq,filesq);
 	Node *dir = crianodo(chdir,fildir);
+	int aj = 2*t;
+	Node **filhos = (Node **) calloc(aj,sizeof(Node));
 
 	if(node->pai != NULL){
 		esq->pai = dir->pai = node->pai;
 		inseresplit(aux->chave,node->pai,esq,dir);
 	}else{
-		Node * filhos[2*t];
 		filhos[0] = esq;
 		filhos[1] = dir;
 		Node *raiznova = crianodo(NULL,filhos);
@@ -132,8 +133,10 @@ void split(Tree *tree, Node *node){
 		raiznova->pai = NULL;
 		tree->raiz = raiznova;
 
-		esq->pai = dir->pai = tree->raiz;
+		esq->pai = tree->raiz;
+		dir->pai = tree->raiz;
 	}
+
 
 }
 
