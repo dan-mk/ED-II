@@ -37,7 +37,7 @@ int main(){
 	insere(40,tree,tree->raiz);
 
 	printf("%d\n",tree->raiz->filhos[0]->keys->chave);
-	printf("%d\n",tree->raiz->filhos[1]->keys->chave);
+	printf("%d\n",tree->raiz->filhos[1]->keys->prox->chave);
 
 
 	return 0;
@@ -81,8 +81,15 @@ void insere(int value, Tree *tree, Node *node){
 				node->quant++;
 			}else{
 				split(tree,node);
-				//insere(value,tree,tree->raiz);
+				insere(value,tree,tree->raiz);
 			}
+		}else{
+			Key *aux = node->keys;
+			int i = 0;
+			for(;aux != NULL && aux->chave < value;aux = aux->prox){
+				i++;
+			}
+			insere(value,tree,node->filhos[i]);
 		}
 	}
 }
@@ -103,7 +110,7 @@ void split(Tree *tree, Node *node){
 	chdir = aux->prox;
 	aux->prox->ant = NULL;
 
-	Node *filesq[t/2], *fildir[t/2];
+	Node **filesq = NULL, **fildir = NULL;
 	if(node->filhos != NULL){
 		int i = 0;
 		for(;i < t;i++)
