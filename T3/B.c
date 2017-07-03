@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int t;
+int t, num = 0;
 
 typedef struct tpnodo {
 	struct chave *keys;
 	struct tpnodo **filhos;
 	struct tpnodo *pai;
 	int quant;
+	int num;
 }Node;
 
 typedef struct chave{
@@ -24,6 +25,7 @@ Node * crianodo(Key * keys, Node **filhos);
 void insere(int value, Tree *tree, Node *node);
 void inseresplit(int value, Node *node,Node *esq, Node *dir);
 void split(Tree *tree, Node *node);
+void imprime(Node *node);
 
 int main(){
 	Tree *tree=(Tree*)malloc(sizeof(Tree));
@@ -35,11 +37,16 @@ int main(){
 	insere(20,tree,tree->raiz);
 	insere(30,tree,tree->raiz);
 	insere(40,tree,tree->raiz);
+	insere(50,tree,tree->raiz);
+	insere(60,tree,tree->raiz);
+	insere(15,tree,tree->raiz);
+	insere(25,tree,tree->raiz);
+	insere(5,tree,tree->raiz);
+	insere(35,tree,tree->raiz);
+	insere(17,tree,tree->raiz);
+	insere(37,tree,tree->raiz);
 
-	printf("%d\n",tree->raiz->filhos[0]->keys->chave);
-	printf("%d\n",tree->raiz->filhos[1]->keys->prox->chave);
-
-
+	imprime(tree->raiz);
 	return 0;
 }
 
@@ -48,6 +55,13 @@ Node * crianodo(Key * keys, Node **filhos){
 	nodo->keys = keys;
 	nodo->filhos = filhos;
 	nodo->quant = t-1;
+	nodo->num = num++;
+	if(filhos != NULL){
+		int i = 0;
+		printf("KAKAKAKAKA\n");
+		for(;i < 2*t && nodo->filhos[i] != NULL;i++)
+			nodo->filhos[i]->pai = nodo;
+	}
 	return nodo;
 }
 
@@ -96,13 +110,14 @@ void insere(int value, Tree *tree, Node *node){
 
 void split(Tree *tree, Node *node){
 	if(node->pai != NULL && node->pai->quant == ((2*t)-1)){
+		printf("banana\n");
 		split(tree,node->pai);
 	}
 	Key *chesq = NULL, *chdir = NULL;
 	chesq = node->keys;
 	Key *aux = chesq;
 	int a = 0;
-
+	int aj = 2*t;
 	for(;a < t-1;a++){
 		aux = aux->prox;
 	}
@@ -113,19 +128,21 @@ void split(Tree *tree, Node *node){
 	Node **filesq = NULL, **fildir = NULL;
 	if(node->filhos != NULL){
 		int i = 0;
+		filesq = (Node **) calloc(aj,sizeof(Node));
+		fildir = (Node **) calloc(aj,sizeof(Node));
 		for(;i < t;i++)
 			filesq[i] = node->filhos[i];
 		for(;i < 2*t;i++)
 			fildir[i] = node->filhos[i];
 	}
 
-	Node *esq = crianodo(chesq,filesq);
+	Node *esq = crianodo(chesq,filesq); //na cria nodo lembra de fazerem os filhso apontarem pra ele PLEASE
 	Node *dir = crianodo(chdir,fildir);
-	int aj = 2*t;
 	Node **filhos = (Node **) calloc(aj,sizeof(Node));
 
 	if(node->pai != NULL){
-		esq->pai = dir->pai = node->pai;
+		esq->pai = node->pai;
+		dir->pai = node->pai;
 		inseresplit(aux->chave,node->pai,esq,dir);
 	}else{
 		filhos[0] = esq;
@@ -139,12 +156,9 @@ void split(Tree *tree, Node *node){
 		raiznova->quant = 1;
 		raiznova->pai = NULL;
 		tree->raiz = raiznova;
-
-		esq->pai = tree->raiz;
-		dir->pai = tree->raiz;
 	}
 
-
+	free(node);
 }
 
 void inseresplit(int value, Node *node,Node *esq, Node *dir){
@@ -154,6 +168,7 @@ void inseresplit(int value, Node *node,Node *esq, Node *dir){
 		ant = aux;
 		i++;
 	}
+	printf("%d kkkkkkkkkk\n",node->keys->chave );
 	Key *novo = (Key *) calloc(1,sizeof(Key));
 	novo->chave = value;
 	novo->ant = ant;
@@ -166,11 +181,30 @@ void inseresplit(int value, Node *node,Node *esq, Node *dir){
 		aux->ant = novo;
 	node->quant++;
 	a = i;
-	while(node->filhos[a] != NULL)
+	while(a < 2*t && node->filhos[a] != NULL )
 		a++;
 	for(; i != a; a--){
 		node->filhos[a] = node->filhos[a-1];
 	}
 	node->filhos[i] = esq;
-	node->filhos[i+1] = esq;
+	node->filhos[i+1] = dir;
+}
+
+void imprime(Node *node){
+		if(node != NULL){
+			printf("Nodo numero : %d. Pai :",node->num);
+			if(node->pai != NULL) printf("%d\n",node->pai->num);
+			else printf("Raiz\n");
+			Key *aux = node->keys;
+			printf("Chaves: ");
+			for(;aux != NULL; aux = aux->prox)
+				printf("%d ",aux->chave);
+			printf("\n");
+
+			if(node->filhos != NULL){
+				int i = 0;
+				for(;node->filhos[i] != NULL;i++)
+					imprime(node->filhos[i]);
+			}
+		}
 }
