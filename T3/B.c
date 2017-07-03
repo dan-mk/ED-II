@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int t, num = 0;
+int t, num = 0,b = 0;
+#define clear() printf("\033[H\033[J");
 
 typedef struct tpnodo {
 	struct chave *keys;
@@ -23,31 +24,87 @@ typedef struct tparvore {
 
 Node * crianodo(Key * keys, Node **filhos);
 void insere(int value, Tree *tree, Node *node);
-void inseresplit(int value, Node *node,Node *esq, Node *dir);
+void inseresplit(Node *node, Key * value,Node *Esq, Node *Dir);
 void split(Tree *tree, Node *node);
 void imprime(Node *node);
+void imprimirMenu();
+void testaValor(Node *node, int valor);
 
 int main(){
 	Tree *tree=(Tree*)malloc(sizeof(Tree));
 	tree->raiz = NULL;
+
+	clear();
+
 	printf("Digite T\n");
 	scanf("%d",&t);
 
-	insere(10,tree,tree->raiz);
-	insere(20,tree,tree->raiz);
-	insere(30,tree,tree->raiz);
-	insere(40,tree,tree->raiz);
-	insere(50,tree,tree->raiz);
-	insere(60,tree,tree->raiz);
-	insere(15,tree,tree->raiz);
-	insere(25,tree,tree->raiz);
-	insere(5,tree,tree->raiz);
-	insere(35,tree,tree->raiz);
-	insere(17,tree,tree->raiz);
-	insere(37,tree,tree->raiz);
+	int valor;
+	int opcao=-1;
+	do{
+		imprimirMenu();
+		scanf("%d", &opcao);
+		switch(opcao){
+			case 0:
+				exit(0);
+			case 1:
+				clear();
+				printf("\nDigite o valor a inserir: ");
+				scanf("%d", &valor);
+				clear();
+				b = 0;
+				testaValor(tree->raiz, valor);
+				if(b==0){
+					insere(valor,tree,tree->raiz);
+				}else{
+					printf("\nO valor ja esta inserido!");
+					getchar();
+					getchar();
+				}
+				clear();
+				break;
+			case 2:
+				clear();
+				printf ("\nElementos da Arvore:\n");
+				imprime(tree->raiz);
+				getchar();
+				getchar();
+				clear();
+				break;
+			default:
+				clear();
+				printf("Opcao invalida\n");
+		}
+	}while(1);
+}
 
-	imprime(tree->raiz);
-	return 0;
+void imprimirMenu(){
+	printf("\nArvore B\n");
+	printf("Escolha a opcao\n");
+	printf("0 - Fechar o programa\n");
+	printf("1 - Inserir Elemento\n");
+	printf("2 - Listar Elementos da arvore\n");
+	printf("\nOpção: ");
+}
+
+void testaValor(Node *node, int valor){
+
+	if(node != NULL){
+
+		Key *aux = node->keys;
+
+		for(;aux != NULL; aux = aux->prox){
+			if(aux->chave == valor){
+				b=1;
+			}
+		}
+		if(node->filhos != NULL){
+			int i = 0;
+			for(;node->filhos[i] != NULL;i++){
+				testaValor(node->filhos[i], valor);
+			}
+		}
+	}
 }
 
 Node * crianodo(Key * keys, Node **filhos){
@@ -58,8 +115,7 @@ Node * crianodo(Key * keys, Node **filhos){
 	nodo->num = num++;
 	if(filhos != NULL){
 		int i = 0;
-		printf("KAKAKAKAKA\n");
-		for(;i < 2*t && nodo->filhos[i] != NULL;i++)
+		for(;i < 2*t && filhos[i] != NULL;i++)
 			nodo->filhos[i]->pai = nodo;
 	}
 	return nodo;
@@ -110,101 +166,107 @@ void insere(int value, Tree *tree, Node *node){
 
 void split(Tree *tree, Node *node){
 	if(node->pai != NULL && node->pai->quant == ((2*t)-1)){
-		printf("banana\n");
 		split(tree,node->pai);
 	}
-	Key *chesq = NULL, *chdir = NULL;
-	chesq = node->keys;
-	Key *aux = chesq;
-	int a = 0;
-	int aj = 2*t;
-	for(;a < t-1;a++){
-		aux = aux->prox;
+	int i=0;
+	Key *aux = node->keys;
+	Key *chesq = node->keys;
+	for(;i<t-1;aux=aux->prox){
+		i++;
 	}
-	aux->ant->prox = NULL;
-	chdir = aux->prox;
+	Key *chdir = aux->prox;
 	aux->prox->ant = NULL;
+	aux->ant->prox = NULL;
+	aux->ant = NULL;
+	aux->prox = NULL;
+	int aj=2*t;
 
 	Node **filesq = NULL, **fildir = NULL;
 	if(node->filhos != NULL){
-		int i = 0;
 		filesq = (Node **) calloc(aj,sizeof(Node));
 		fildir = (Node **) calloc(aj,sizeof(Node));
-		for(;i < t;i++)
+
+		for(i=0;i<t;i++){
 			filesq[i] = node->filhos[i];
-		for(;i < 2*t;i++)
-			fildir[i] = node->filhos[i];
+		}
+		for(i=0; i<t;i++){
+			fildir[i] = node->filhos[i+t];
+		}
 	}
 
-	Node *esq = crianodo(chesq,filesq); //na cria nodo lembra de fazerem os filhso apontarem pra ele PLEASE
-	Node *dir = crianodo(chdir,fildir);
-	Node **filhos = (Node **) calloc(aj,sizeof(Node));
-
+	Node *Dir = crianodo(chdir,fildir);
+	Node *Esq = crianodo(chesq, filesq);
+	
 	if(node->pai != NULL){
-		esq->pai = node->pai;
-		dir->pai = node->pai;
-		inseresplit(aux->chave,node->pai,esq,dir);
-	}else{
-		filhos[0] = esq;
-		filhos[1] = dir;
-		Node *raiznova = crianodo(NULL,filhos);
-		Key *key = (Key *) calloc(1,sizeof(Key));
-		key->chave = aux->chave;
-		key->ant = NULL;
-		key->prox = NULL;
-		raiznova->keys = key;
-		raiznova->quant = 1;
-		raiznova->pai = NULL;
-		tree->raiz = raiznova;
-	}
+		Esq->pai = node->pai;
+		Dir->pai = node->pai;
 
+		inseresplit(node->pai, aux, Esq,Dir);
+	}else{
+		Node *novaRaiz = (Node *) calloc(1,sizeof(Node));
+		novaRaiz->keys = aux;
+		novaRaiz->quant = 1;
+		novaRaiz->num = num++;
+		Node ** filhos = (Node **) calloc(aj, sizeof(Node));
+		filhos[0] = Esq;
+		filhos[1] = Dir;
+		Esq->pai = novaRaiz;
+		Dir->pai = novaRaiz;
+		novaRaiz->filhos = filhos;
+		tree->raiz = novaRaiz;
+	}	
 	free(node);
 }
 
-void inseresplit(int value, Node *node,Node *esq, Node *dir){
-	int i = 0,a;
+void inseresplit(Node *node, Key * value,Node *Esq, Node *Dir){
 	Key *aux = node->keys, *ant = NULL;
-	for(;aux != NULL && aux->chave < value;aux = aux->prox){
+
+	int i=0;
+	int a = 0;
+	for(;aux != NULL && aux->chave < value->chave; aux=aux->prox){
 		ant = aux;
 		i++;
 	}
-	printf("%d kkkkkkkkkk\n",node->keys->chave );
-	Key *novo = (Key *) calloc(1,sizeof(Key));
-	novo->chave = value;
-	novo->ant = ant;
-	novo->prox = aux;
-	if(ant == NULL)
-		node->keys = novo;
-	else
-		ant->prox = novo;
-	if(aux != NULL)
-		aux->ant = novo;
+	if(ant == NULL){
+		value->prox = aux;
+		aux->ant = value;
+		node->keys = value;
+	}else{
+		value->prox = aux;
+		value->ant  = ant;
+		ant->prox = value;
+		if(aux != NULL)
+			aux->ant = value;
+			
+	}
 	node->quant++;
+
 	a = i;
 	while(a < 2*t && node->filhos[a] != NULL )
 		a++;
 	for(; i != a; a--){
 		node->filhos[a] = node->filhos[a-1];
 	}
-	node->filhos[i] = esq;
-	node->filhos[i+1] = dir;
+	node->filhos[i] = Esq;
+	node->filhos[i+1] = Dir;
+
 }
 
 void imprime(Node *node){
-		if(node != NULL){
-			printf("Nodo numero : %d. Pai :",node->num);
-			if(node->pai != NULL) printf("%d\n",node->pai->num);
-			else printf("Raiz\n");
-			Key *aux = node->keys;
-			printf("Chaves: ");
-			for(;aux != NULL; aux = aux->prox)
-				printf("%d ",aux->chave);
-			printf("\n");
+	if(node != NULL){
+		printf("Nodo numero : %d. Pai :",node->num);
+		if(node->pai != NULL) printf("%d\n",node->pai->num);
+		else printf("Raiz\n");
+		Key *aux = node->keys;
+		printf("Chaves: ");
+		for(;aux != NULL; aux = aux->prox)
+			printf("%d ",aux->chave);
+		printf("\n");
 
-			if(node->filhos != NULL){
-				int i = 0;
-				for(;node->filhos[i] != NULL;i++)
-					imprime(node->filhos[i]);
-			}
+		if(node->filhos != NULL){
+			int i = 0;
+			for(;node->filhos[i] != NULL;i++)
+				imprime(node->filhos[i]);
 		}
+	}
 }
